@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script type="text/javascript">
+            var body = [];
+            var heading = 0;
+            var x = 0;
+            var newHeading = 0;
+            var score = 0;
+            var size;
+            var unit;
+            var fruit;
+            var speed;
+            var fruits = [];
+            var started = false;
+            var lost = false;
+            var thread;
+            
+            $(document).ready(function() {
+                drawSnake(51, 10, 1, 10);
+            });
+            
+            $(document).keydown(function(event) {
+                var code = event.which || event.keyCode;
+                switch (code) {
+                    case 32:
+                        start();
+                        break;
+                    case 65:
+                    case 37:
+                        move(3);
+                        break;
+                    case 87:
+                    case 38:
+                        move(0);
+                        break;
+                    case 68:
+                    case 39:
+                        move(1);
+                        break;
+                    case 83:
+                    case 40:
+                        move(2);
+                        break;
+                }
+            });
+
+            function drawSnake(size, unit, fruit, speed) {
+                var canvas = $('canvas')[0];
+                canvas.width = size * unit;
+                canvas.height = size * unit;
+                canvas.style.borderWidth = '1px';
+                canvas.style.borderColor = 'black';
+                canvas.style.borderStyle = 'solid';
+                this.size = size;
+                this.unit = unit;
+                this.fruit = fruit;
+                this.speed = speed;
+                canvas = canvas.getContext('2d');
+                this.repaint(canvas);
+            }
+            
+            function checkPoint(list, point) {
+                for (var i = 0; i < list.length; i++)
+                    if (this.pointEqual(list[i], [point[0], point[1]]))
+                        return i;
+                return -1;
+            }
+            
+            function pointEqual(pointa, pointb) {
+                return pointa[0] == pointb[0] && pointa[1] == pointb[1];
+            }
+            
+            function repaint(canvas) {
+                canvas.fillStyle = '#ffffff';
+                canvas.fillRect(0, 0, this.size * this.unit, this.size * this.unit);
+                canvas.fillStyle = '#00ff00';
+                for (var i = 0; i < this.body.length; i++)
+                    canvas.fillRect(this.body[i][0] * this.unit, this.body[i][1] * this.unit, this.unit, this.unit);
+                canvas.fillStyle = '#000000';
+                if (this.body.length != 0) {
+                    var point = this.body[0];
+                    var size = this.unit / 5;
+                    var xa = point[0] * this.unit + size;
+                    var ya = point[1] * this.unit + size;
+                    var xb = point[0] * this.unit + this.unit - size * 2;
+                    var yb = point[1] * this.unit + size;
+                    var xc = point[0] * this.unit + this.unit - size * 2;
+                    var yc = point[1] * this.unit + this.unit - size * 2;
+                    var xd = point[0] * this.unit + size;
+                    var yd = point[1] * this.unit + this.unit - size * 2;
+                    switch (this.heading) {
+                    case 0:
+                        canvas.fillRect(xa, ya, size, size);
+                        canvas.fillRect(xb, yb, size, size);
+                        break;
+                    case 1:
+                        canvas.fillRect(xb, yb, size, size);
+                        canvas.fillRect(xc, yc, size, size);
+                        break;
+                    case 2:
+                        canvas.fillRect(xc, yc, size, size);
+                        canvas.fillRect(xd, yd, size, size);
+                        break;
+                    case 3:
+                        canvas.fillRect(xd, yd, size, size);
+                        canvas.fillRect(xa, ya, size, size);
+                        break;
+                    }
+                }
+                canvas.fillStyle = '#0000ff';
+                for (var i = 0; i < this.fruits.length; i++)
+                    canvas.fillRect(this.fruits[i][0] * this.unit, this.fruits[i][1] * this.unit, this.unit, this.unit);
+                if (this.lost) {
+                    $('#lost')[0].innerHTML = 'YOU LOST!';
+                    $('#hidden').toggle();
+                }
+            }
+            
+            function augment() {
+                var pointx = this.body[0][0];
+                var pointy = this.body[0][1];
+                pointx = pointx - (this.heading % 2) * (this.heading - 2);
+                pointy = pointy + ((this.heading + 1) % 2) * (this.heading - 1);
+                if (pointx < 0)
+                    pointx = this.size - 1;
+                else if (pointx >= this.size)
+                    pointx = 0;
+                if (pointy < 0)
+                    pointy = this.size - 1;
+                else if (pointy >= this.size)
+                    pointy = 0;
+                if (this.checkPoint(this.body, [pointx, pointy]) != -1)
+                    throw Error();
+                this.body = [[pointx, pointy]].concat(this.body);
+                var index = this.checkPoint(this.fruits, [pointx, pointy]);
+                if (index == -1)
+                    return false;
+                this.fruits.splice(index - 1, 1);
+                if (this.body.length + this.fruits.length < this.size * this.size) {
+                    var fruit = [-1, -1];
+                    do
+                        fruit = [Math.floor(Math.random() * this.size), Math.floor(Math.random() * this.size)];
+                    while (this.checkPoint(this.body, fruit) != -1 || this.checkPoint(this.fruits, fruit) != -1);
+                    this.fruits.push(fruit);
+                }
+                return true;
+            }
+            
+            function turn() {
+                this.heading = this.newHeading;
+            }
+            
+            function move(heading) {
+                if (Math.abs(this.heading - heading) == 2)
+                    return;
+                this.newHeading = heading;
+            }
+            
+            function advance() {
+                if (!this.augment())
+                    this.body.pop();
+                else
+                    $('#score')[0].innerHTML = ++score;
+            }
+            
+            function start() {
+                if (!this.started) {
+                    this.started = true;
+                    $('#hidden').toggle();
+                    this.body = [[Math.floor(this.size / 2), Math.floor(this.size / 2)]];
+                    this.fruits = [];
+                    for (var i = 0; i < this.fruit; i++) {
+                        var fruit = [-1, -1];
+                        do
+                            fruit = [Math.floor(Math.random() * this.size), Math.floor(Math.random() * this.size)];
+                        while (this.checkPoint(this.body, fruit) != -1 || this.checkPoint(this.fruits, fruit) != -1);
+                        this.fruits.push(fruit);
+                    }
+                    this.heading = 0;
+                    this.newHeading = 0;
+                    this.score = 0;
+                    this.lost = false;
+                    $('#score')[0].innerHTML = '0';
+                    $('#lost')[0].innerHTML = '';
+                    this.thread = this.setInterval(function() {
+                        try {
+                            this.turn();
+                            this.advance();
+                            this.repaint($('canvas')[0].getContext('2d'));
+                        } catch(e) {
+                            this.started = false;
+                            this.lost = true;
+                            this.repaint($('canvas')[0].getContext('2d'));
+                            this.clearInterval(this.thread);
+                        }
+                    }, 1000 / this.speed);
+                }
+            }
+        </script>
+        <title>Snake</title>
+    </head>
+    <body style="text-align: center; ">
+        <p id="score">0</p>
+        <canvas></canvas>
+        <p id="lost" style="color: red; font-size: 24px; font-family: 'Courier New'; font-weight: bold; "></p>
+        <p id="hidden">按下空格键开始</p>
+    </body>
+</html>
