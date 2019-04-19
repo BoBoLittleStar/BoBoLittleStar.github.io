@@ -82,6 +82,7 @@
                 canvas.globalAlpha = 0.5;
                 canvas.fillStyle = '#ffffff';
                 canvas.fillRect(0, 0, this.size * this.unit, this.size * this.unit);
+                canvas.globalAlpha = 1;
                 canvas.fillStyle = '#00ff00';
                 for (var i = 0; i < this.body.length; i++)
                     canvas.fillRect(this.body[i][0] * this.unit, this.body[i][1] * this.unit, this.unit, this.unit);
