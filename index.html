@@ -19,7 +19,7 @@
             var thread;
             
             $(document).ready(function() {
-                drawSnake(51, 10, 1, 100);
+                init(51, 10, 1, 10);
             });
             
             $(document).keydown(function(event) {
@@ -47,7 +47,7 @@
                 }
             });
 
-            function drawSnake(size, unit, fruit, speed) {
+            function init(size, unit, fruit, speed) {
                 var canvas = $('canvas')[0];
                 canvas.width = size * unit;
                 canvas.height = size * unit;
@@ -74,6 +74,12 @@
             }
             
             function repaint(canvas) {
+                canvas.fillStyle = '#ffffff';
+                canvas.fillRect(0, 0, this.size * this.unit, this.size * this.unit);
+                var img = new Image();
+                img.src = 'pikachu.png';
+                canvas.drawImage(img, 0, 0, this.size * this.unit, this.size * this.unit);
+                canvas.globalAlpha = 0.5;
                 canvas.fillStyle = '#ffffff';
                 canvas.fillRect(0, 0, this.size * this.unit, this.size * this.unit);
                 canvas.fillStyle = '#00ff00';
