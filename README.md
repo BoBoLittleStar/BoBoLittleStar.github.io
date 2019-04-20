@@ -1,1 +1,1 @@
-<a href="BoBoLittleStar.github.io">My home page</a>
+<a href="http://boboLittleStar.github.io">My home page</a>
